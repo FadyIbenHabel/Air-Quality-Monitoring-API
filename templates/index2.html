@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        .card {
+            margin-bottom: 20px;
+        }
+
+        .error-message {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <h1 class="text-center mb-4">Login</h1>
+                <div class="card">
+                    <div class="card-body">
+
+                        <form id="loginForm">
+                            <div class="form-group">
+                                <label for="emailInput">Email:</label>
+                                <input type="email" class="form-control" id="emailInput" placeholder="Enter your email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="passwordInput">Password:</label>
+                                <input type="password" class="form-control" id="passwordInput" placeholder="Enter your password" required>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="login()">Login</button>
+                        </form>
+                    </div>
+                </div>
+
+                <p id="errorMessage" class="error-message d-none"></p>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <script>
+        function login() {
+            window.location.href = '/login';
+        }
+
+        // Check if the page URL contains the "code" parameter, indicating a callback from the OAuth2 flow
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+
+        if (code) {
+            // Perform a fetch request to the /callback route with the received authorization code
+            fetch(`/callback?code=${code}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Process the data returned from the server
+                    console.log('Login successful:', data);
+
+                    // Redirect to the home page 
+                    window.location.href = '/home';
+                })
+                .catch(error => {
+                    console.error('Error during login:', error);
+                });
+        }
+    </script>
+</body>
+
+</html>

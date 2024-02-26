@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Quality Checker</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        .card {
+            margin-bottom: 20px;
+        }
+
+        .error-message {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <h1 class="text-center mb-4">Air Quality Checker</h1>
+
+                <div class="mb-3">
+                    <a href="/feedback_page" class="btn btn-success">Post Feedback</a>
+                    <a href="/report_page" class="btn btn-warning">Report Pollution</a>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <form id="cityForm">
+                            <div class="form-group">
+                                <label for="cityInput">Enter City Name:</label>
+                                <input type="text" class="form-control" id="cityInput" placeholder="e.g., London" required>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="getAirQuality()">Check AQI</button>
+                            <button type="button" class="btn btn-primary" onclick="getEnvironmentalPollutants()">Get Environmental Pollutants</button>
+                            <button type="button" class="btn btn-primary" onclick="seeObservations()">See Observations</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="resultCard" class="card d-none">
+                    <div class="card-body">
+                        <h3>Results for <span id="resultCityName"></span></h3>
+                        <p>Air Quality Index (AQI): <span id="resultAqi"></span></p>
+                        <p>Status: <span id="resultStatus"></span></p>
+                    </div>
+                </div>
+
+                <div id="resultPollutantsCard" class="card d-none">
+                    <div class="card-body">
+                        <h3>Results for <span id="resultPollutantsCityName"></span></h3>
+                        <p>Monoxid CO: <span id="resultCO"></span></p>
+                        <p>Particulate Matter 10: <span id="resultPM10"></span></p>
+                        <p>Particulate Matter 2.5: <span id="resultPM25"></span></p>
+                        <p>Ozone O3: <span id="resultO3"></span></p>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-danger" onclick="logout()">Logout</button>
+
+                <p id="errorMessage" class="error-message d-none"></p>
+            </div>
+        </div>
+    </div>
+    <div id="observationsContainer"></div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <script>
+        function getAirQuality() {
+
+            var cityInput = document.getElementById('cityInput').value;
+
+            // Make an API request to the Flask end point
+            fetch(`/aqi/${cityInput}`)
+                .then(response => response.json())
+                .then(data => {
+                    if ('error' in data) {
+                        // Display the error message
+                        document.getElementById('errorMessage').innerText = data.error;
+                        document.getElementById('errorMessage').classList.remove('d-none');
+                        document.getElementById('resultCard').classList.add('d-none');
+                        document.getElementById('resultPollutantsCard').classList.add('d-none');
+
+                    } else {
+                        // Display the results
+                        document.getElementById('resultCityName').innerText = data.City_Name;
+                        document.getElementById('resultAqi').innerText = data.aqi;
+                        document.getElementById('resultStatus').innerText = data['status of the Air Quality'];
+                        
+                        // Hide error message and show result card
+                        document.getElementById('errorMessage').classList.add('d-none');
+                        document.getElementById('resultCard').classList.remove('d-none');
+                        document.getElementById('resultPollutantsCard').classList.add('d-none');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+        async function getEnvironmentalPollutants() {
+    const cityInput = document.getElementById('cityInput').value;
+    const resultCard = document.getElementById('resultCard');
+    const resultPollutantsCard = document.getElementById('resultPollutantsCard');
+    const resultPollutantsCityName = document.getElementById('resultPollutantsCityName');
+    const resultCO = document.getElementById('resultCO');
+    const resultPM10 = document.getElementById('resultPM10');
+    const resultPM25 = document.getElementById('resultPM25');
+    const resultO3 = document.getElementById('resultO3');
+    const errorMessage = document.getElementById('errorMessage');
+
+    try {
+        const response = await fetch(`/environmental_pollutants/${cityInput}`);
+        const data = await response.json();
+
+        if (response.ok) {
+            // Show pollutants data
+            resultCard.classList.add('d-none');
+            resultPollutantsCard.classList.remove('d-none');
+
+            // Update pollutants data
+            resultPollutantsCityName.textContent = data.City_Name;
+            resultCO.textContent = `${data['Monoxid CO'] || 'Data not available'}`;
+            resultPM10.textContent = `${data['particulate matter 10'] || 'Data not available'}`;
+            resultPM25.textContent = `${data['particulate matter 2.5'] || 'Data not available'}`;
+            resultO3.textContent = `${data['Ozone O3'] || 'Data not available'}`;
+
+        } else {
+            // Hide pollutants data
+            resultCard.classList.add('d-none');
+            resultPollutantsCard.classList.add('d-none');
+
+            // Show error message
+            errorMessage.textContent = data.error;
+            errorMessage.classList.remove('d-none');
+        }
+    } catch (error) {
+        // Handle fetch error
+        errorMessage.textContent = 'Error fetching data.';
+        errorMessage.classList.remove('d-none');
+    }
+}
+async function seeObservations() {
+    const resultCard = document.getElementById('resultCard');
+    const resultPollutantsCard = document.getElementById('resultPollutantsCard');
+    const errorMessage = document.getElementById('errorMessage');
+
+    try {
+        const response = await fetch('/observations');
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // Hide other result cards
+            resultCard.classList.add('d-none');
+            resultPollutantsCard.classList.add('d-none');
+
+            // Display observations data
+            displayObservations(data.observations);
+        } else {
+            // Hide other result cards
+            resultCard.classList.add('d-none');
+            resultPollutantsCard.classList.add('d-none');
+
+            // Show error message
+            errorMessage.textContent = data.error;
+            errorMessage.classList.remove('d-none');
+        }
+    } catch (error) {
+        // Handle fetch error
+        errorMessage.textContent = 'Error fetching data.';
+        errorMessage.classList.remove('d-none');
+    }
+}
+function logout() {
+            // Redirect to the server's /logout route to clear the session
+            window.location.href = '/logout';
+        }
+
+function displayObservations(observations) {
+    const observationsContainer = document.getElementById('observationsContainer');
+
+    // Clear previous observations
+    observationsContainer.innerHTML = '';
+
+    if (observations.length > 0) {
+        // Create a table to display observations
+        const table = document.createElement('table');
+        table.classList.add('table', 'table-bordered');
+
+        // Create the table header
+        const thead = document.createElement('thead');
+        thead.innerHTML = `
+            <tr>
+                <th>City Name</th>
+                <th>AQI</th>
+                <th>CO</th>
+                <th>PM10</th>
+                <th>PM25</th>
+                <th>O3</th>
+                <th>Timestamp</th>
+            </tr>
+        `;
+        table.appendChild(thead);
+
+        // Create the table body
+        const tbody = document.createElement('tbody');
+        observations.forEach(observation => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${observation.City_Name}</td>
+                <td>${observation.AQI}</td>
+                <td>${observation.CO}</td>
+                <td>${observation.PM10}</td>
+                <td>${observation.PM25}</td>
+                <td>${observation.O3}</td>
+                <td>${observation.Timestamp}</td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        table.appendChild(tbody);
+
+        // Append the table to the container
+        observationsContainer.appendChild(table);
+    } else {
+        // If no observations, display a message
+        observationsContainer.innerText = 'No observations available.';
+    }
+}
+
+    </script>
+</body>
+
+</html>

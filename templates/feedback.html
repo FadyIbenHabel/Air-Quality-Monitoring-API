@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Form</title>
+   
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        .card {
+            margin-bottom: 20px;
+        }
+
+        .error-message {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <h1 class="text-center mb-4">Feedback Form</h1>
+                <div class="card">
+                    <div class="card-body">
+                      
+                        <form id="feedbackForm">
+                            <div class="form-group">
+                                <label for="nameInput">Your Name:</label>
+                                <input type="text" class="form-control" id="nameInput" placeholder="Enter your name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="emailInput">Your Email:</label>
+                                <input type="email" class="form-control" id="emailInput" placeholder="Enter your email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="feedbackInput">Feedback Message:</label>
+                                <textarea class="form-control" id="feedbackInput" placeholder="Enter your feedback" required></textarea>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="submitFeedback()">Submit Feedback</button>
+                        </form>
+                    </div>
+                </div>
+
+                <p id="errorMessage" class="error-message d-none"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <script>
+        // Perform the POST request to the /feedback endpoint
+        function submitFeedback() {
+        // Get user input
+        var name = document.getElementById('nameInput').value;
+        var email = document.getElementById('emailInput').value;
+        var feedback = document.getElementById('feedbackInput').value;
+
+        // Create FormData object to send data in the POST request
+        var formData = new FormData();
+        formData.append('name', name);
+        formData.append('email', email);
+        formData.append('feedback', feedback);
+
+        // Make a POST request to submit feedback
+        fetch('/post_feedback', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Process the data returned from the server
+            console.log('Feedback submitted successfully:', data);
+
+            // Redirect to the home page
+            window.location.href = '/home';
+        })
+        .catch(error => {
+            console.error('Error submitting feedback:', error);
+        });
+    }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Pollution Report</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        .card {
+            margin-bottom: 20px;
+        }
+
+        .error-message {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <h1 class="text-center mb-4">Delete Pollution Report</h1>
+                <div class="card">
+                    <div class="card-body">
+                        <form id="deleteReportForm">
+                            <div class="form-group">
+                                <label for="reportIdToDeleteInput">Report ID to Delete:</label>
+                                <input type="text" class="form-control" id="reportIdToDeleteInput" placeholder="Enter report ID to delete" required>
+                            </div>
+                            <button type="button" class="btn btn-danger" onclick="deletePollutionReport()">Delete Report</button>
+                        </form>
+                    </div>
+                </div>
+
+                <p id="deleteErrorMessage" class="error-message d-none"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <script>
+        function deletePollutionReport() {
+            // Get report ID to delete
+            var reportIdToDelete = document.getElementById('reportIdToDeleteInput').value;
+
+            // Make an API request to delete the pollution report
+            fetch(`/delete_pollution_report/${reportIdToDelete}`, {
+                method: 'DELETE',
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert('Pollution report deleted successfully');
+                    window.location.href = '/home';
+                })
+                .catch(error => {
+                    console.error('Error deleting pollution report:', error);
+                    // Display error message to the user
+                    document.getElementById('deleteErrorMessage').innerText = 'Error deleting pollution report. Please try again.';
+                    document.getElementById('deleteErrorMessage').classList.remove('d-none');
+                });
+        }
+    </script>
+</body>
+
+</html>

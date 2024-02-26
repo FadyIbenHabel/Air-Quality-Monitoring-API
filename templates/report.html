@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Pollution</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        .card {
+            margin-bottom: 20px;
+        }
+
+        .error-message {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <h1 class="text-center mb-4">Report Pollution</h1>
+                <button type="button" class="btn btn-warning" onclick="redirectToUpdatePage()">Update Report</button>
+                <button type="button" class="btn btn-danger" onclick="redirectToDeletePage()">Delete Report</button>
+                <div class="card">
+                    <div class="card-body">
+                        <form id="pollutionReportForm">
+                            <div class="form-group">
+                                <label for="locationInput">Location:</label>
+                                <input type="text" class="form-control" id="locationInput" placeholder="Enter location" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="pollutionTypeInput">Type of Pollution:</label>
+                                <input type="text" class="form-control" id="pollutionTypeInput" placeholder="Enter pollution type" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="commentsInput">Additional Comments:</label>
+                                <textarea class="form-control" id="commentsInput" placeholder="Enter additional comments"></textarea>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="submitPollutionReport()">Submit Report</button>
+                        </form>
+                    </div>
+                </div>
+
+                <p id="errorMessage" class="error-message d-none"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <script>
+        async function submitPollutionReport() {
+            // Get values from the form
+            var location = document.getElementById('locationInput').value;
+            var pollutionType = document.getElementById('pollutionTypeInput').value;
+            var additionalComments = document.getElementById('commentsInput').value;
+    
+            // Make an API request to the Flask endpoint
+            try {
+                const response = await fetch('/report_pollution', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `location=${location}&pollution_type=${pollutionType}&additional_comments=${additionalComments}`
+                });
+    
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+    
+                const data = await response.json();
+    
+                // Get the report ID
+                const reportId = await getReportIdFromServer();
+    
+                // Display success message with the report ID
+                alert(`Pollution report submitted successfully. Report ID: ${reportId}`);
+                // redirect to home page
+                window.location.href = '/home';
+            } catch (error) {
+                console.error('Error submitting pollution report:', error);
+                // Display error message to the user
+                document.getElementById('errorMessage').innerText = 'Error submitting pollution report. Please try again.';
+                document.getElementById('errorMessage').classList.remove('d-none');
+            }
+        }
+    
+        async function getReportIdFromServer() {
+           
+            const endpointUrl = '/get_current_report_id';
+    
+            // Make a GET request to fetch the report ID
+            try {
+                const response = await fetch(endpointUrl);
+    
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+    
+                const data = await response.json();
+    
+               
+                return data.report_id;
+            } catch (error) {
+                console.error('Error fetching report ID:', error);
+                // Handle the error or return a default value
+                return null;
+            }
+        }
+        function redirectToDeletePage() {
+    
+        window.location.href = '/delete_report_page';
+    }
+        function redirectToUpdatePage(){
+            window.location.href = '/update_report_page';
+    }
+    </script>
+</body>
+
+</html>
